@@ -16,12 +16,127 @@ protocols = [
     "VLESS", 
     "VMess", 
     "Hysteria", 
-    "Hysteria2", 
+    "Hysteria2",
+    "QUIC",
     "TUIC", 
     "NaiveProxy", 
     "SSH Tunnel", 
     "MTProto Proxy"
     ]
+
+regions = {
+    "Нидерланды": [
+        "Amsterdam",
+        "Rotterdam",
+        "Eindhoven"
+    ],
+
+    "Германия": [
+        "Frankfurt",
+        "Berlin",
+        "Munich",
+        "Hamburg"
+    ],
+
+    "Швейцария": [
+        "Zurich",
+        "Geneva"
+    ],
+
+    "Финляндия": [
+        "Helsinki"
+    ],
+
+    "Швеция": [
+        "Stockholm",
+        "Gothenburg"
+    ],
+
+    "Польша": [
+        "Warsaw",
+        "Kraków",
+        "Poznań"
+    ],
+
+    "Япония": [
+        "Tokyo",
+        "Osaka"
+    ],
+
+    "Россия": [
+        "Moscow",
+        "Saint Petersburg",
+        "Novosibirsk"
+    ],
+
+    "Турция": [
+        "Istanbul",
+        "Ankara"
+    ],
+
+    "ОАЭ": [
+        "Dubai",
+        "Abu Dhabi"
+    ],
+
+    "Казахстан": [
+        "Almaty",
+        "Astana"
+    ],
+
+    "Сингапур": [
+        "Singapore"
+    ],
+
+    "Австралия": [
+        "Sydney",
+        "Melbourne",
+        "Perth",
+        "Brisbane"
+    ],
+
+    "Франция": [
+        "Paris",
+        "Marseille",
+        "Lyon"
+    ]
+}
+
+#не активный, но на будущее
+servers = {
+    "Германия": {
+        "cities": [
+            "Frankfurt",
+            "Berlin",
+            "Munich"
+        ],
+        "dpi": False,
+        "udp_block": False
+    },
+
+    "Россия": {
+        "cities": [
+            "Moscow",
+            "Saint Petersburg"
+        ],
+        "dpi": True,
+        "udp_block": False
+    }
+}
+#servers = {
+#    "Германия": {
+#        "cities": [...],
+#        "providers": [
+#            "Hetzner",
+#            "OVH",
+#            "DigitalOcean"
+#        ],
+#        "dpi": False,
+#        "quic_block": False,
+#        "wireguard_detect": False
+#    }
+#}
+
 scores = {}
 base_scores = {}
 blocked_scores = {}
@@ -35,12 +150,6 @@ for protocol in protocols:
     blocked_scores[protocol] = 0
     mode_scores[protocol] = 0
     final_score[protocol] = 0
-
-# QUIT можешь добавить
-# Latency (пинг)
-# Jitter (скачки пинга)
-# Packet Loss (потери)
-# Bandwidth (скорость)
 
 #для оценки:
 #100  = рекомендую
@@ -68,29 +177,93 @@ def clear_terminal():
 
 
 def generate_server_stats():
-    #r = random.random()
-    #if r < 0.70:
-    #    ping_ms_tcp = random.randint(20, 100)
-    #elif r < 0.90:
-    #    ping_ms_tcp = random.randint(100, 300)
-    #elif r < 0.98:
-    #    ping_ms_tcp = random.randint(300, 600)
-    #else:
-    #    ping_ms_tcp = random.randint(600, 1000)
-
-    if random.random() < 0.8:
-        ping_ms_tcp = random.randint(10, 150)
+    clear_terminal()
+    # Ping в мс (RTT (Round Trip Time) -- пользователь говорит, сервер отвечает)
+    # Latency в мс (Пользователь говорит серверу) сложное в реализации
+    # Jitter в мс (скачки пинга)
+    # Packet Loss в % (потери)
+    # Bandwidth в Мбит/с (скорость)
+    if random.random() < 0.70:
+        ping_ms_tcp = random.randint(20, 100)
+    elif random.random() < 0.90:
+        ping_ms_tcp = random.randint(100, 300)
+    elif random.random() < 0.98:
+        ping_ms_tcp = random.randint(300, 600)
     else:
-        ping_ms_tcp = random.randint(150, 1000)
-    #Нидералнд, Германия, Швейцария, Финлядия, Шведция, Польша, Япония, Россия, Турция, ОАЭ, Казахстан, Сингапур, Австралия
-    loss = random.randrange(100)
-    dpi_detector = random.random() > 0.5
+        ping_ms_tcp = random.randint(600, 1000)
+    
+    if random.random() < 0.8:
+        loss = random.uniform(0, 1)
+    elif random.random() < 0.95:
+        loss = random.uniform(1, 5)
+    else:
+        loss = random.uniform(5, 20)
 
-    print("Пинг в мс по TCP:", ping_ms_tcp)
-    print("Потеря пакетов:", loss, "%")
-    print("Находиться в ЧС у DPI?:", dpi_detector)
+    if random.random() < 0.75:
+        jitter = random.randint(0, 5)
+    elif random.random() < 0.95:
+        jitter = random.randint(5, 20)
+    else:
+        jitter = random.randint(20, 80)
+    
+    if random.random() < 0.7:
+        cpu = random.randint(10, 60)
+    elif random.random() < 0.9:
+        cpu = random.randint(60, 85)
+    else:
+        cpu = random.randint(85, 100)
+
+#100–1000+ Мбит/с - отлично
+#30–100 Мбит/с - нормально
+#5–30 Мбит/с - плохо
+#<5 Мбит/с - очень плохо
+    if random.random() < 0.65:
+        Download = random.randint(100, 2500)
+    elif random.random() < 0.85:
+        Download = random.randint(30, 100)
+    elif random.random() < 0.97:
+        Download = random.randint(5, 30)
+    else:
+        Download = random.randint(1, 5)
+
+#50–500+ Мбит/с - отлично
+#10–50 Мбит/с - нормально
+#2–10 Мбит/с - плохо
+#<2 Мбит/с - очень плохо
+    if random.random() < 0.65:
+        upload = random.randint(50, 1500)
+    elif random.random() < 0.85:
+        upload = random.randint(10, 50)
+    elif random.random() < 0.97:
+        upload = random.randint(2, 10)  
+    else:
+        upload = random.randint(1, 9)
+
+    country = random.choice(list(regions.keys()))
+    city = random.choice(regions[country])
+
+    dpi_detector = random.random() > 0.5
+    
+    print("ID: [В данном моменте не используется]")
+    print(f"Пинг: {ping_ms_tcp} мс по TCP")
+    print(f"Искажение/дрожание: {jitter} мс")
+    print(f"Потеря пакетов: {loss:.2f}%")
+    print(f"Скачивание: {Download} Мбит/с" )
+    print(f"Загрузки: {upload} Мбит/с" )
+    print(f"CPU/разгрузка сервера: {cpu}%")
+    print(f"Страна и город: {country}, {city}")
+    print("Поддерживаемый протокол: [по умолчанию все]" )
+    print("Обнаруживает DPI?:", dpi_detector)
 
 def block_protocol_menu():
+    #Регион / Провайдер
+    #DPI
+    #UDP Block
+    #QUIC Block
+    #WireGuard Detection
+    #OpenVPN Detection
+    #VLESS Detection
+    
     global blocked_scores
     clear_terminal()
     print(menu_block)
@@ -124,6 +297,7 @@ def Selecting_mode():
         return
     
     if mode == 1:
+        #игровой режим
         if current_mode != 1:
             mode_scores.update({
                 "OpenVPN": -30, #тяжелее и медленнее
@@ -133,6 +307,7 @@ def Selecting_mode():
                 "SoftEther": -100, # для обхода создан
                 "IKEv2/IPSec": 0, # я хз
                 "SSTP": -200, # медленный, только на win и то после некоторое время сам выключался или же TCP поверх TCP - боль
+                "SOCKS5": 0, # я хз
                 "HTTP Proxy": 0, # я хз
                 "Shadowsocks": 0, # я хз
                 "Trojan": 0, # я хз
@@ -140,6 +315,7 @@ def Selecting_mode():
                 "VMess": -80, # староват и тяжелее
                 "Hysteria": 100, # хорош при потерях
                 "Hysteria2": 100, # тот же хисткрия, только новее
+                "QUIC": 0, # хз
                 "TUIC": 0, # хз
                 "NaiveProxy": 0, # хз
                 "SSH Tunnel": 0, # хз
@@ -156,6 +332,7 @@ def Selecting_mode():
             return 
         
     if mode == 2:
+        #Режим борщивика
         if current_mode != 2:
             mode_scores.update({
                 "OpenVPN": -150, #некоторые DPI знает характер
@@ -165,6 +342,7 @@ def Selecting_mode():
                 "SoftEther": 100, # для обхода создан
                 "IKEv2/IPSec": 0, # я хз
                 "SSTP": -10, # для временного захода сойдёт
+                "SOCKS5": 0, # я хз
                 "HTTP Proxy": 0, # я хз
                 "Shadowsocks": 50, # как раз для этого, но в некоторых стран уже блокируется
                 "Trojan": 50, # как раз для этого, но думаю, если не правильно настроить, то лекго обноружить
@@ -172,6 +350,7 @@ def Selecting_mode():
                 "VMess": 100, # как атернативный вариант VLESS
                 "Hysteria": 100, # хорош при потерях
                 "Hysteria2": 100, # тот же хисткрия, только новее
+                "QUIC": 0, # хз
                 "TUIC": 0, # хз
                 "NaiveProxy": 0, # хз
                 "SSH Tunnel": 0, # хз
@@ -188,27 +367,29 @@ def Selecting_mode():
             return  
 
     if mode == 3:
+        #Режим шпиона
         if current_mode != 3:
-            # Пришлось Чату GPT попросить, т. к. для меня стабильность -- анти-DPI протокол или его провайдер не отвалился за 3 дня
             mode_scores.update ({
-                "OpenVPN": 20,         # старый, тяжёлый, но зрелый и предсказуемый
-                "WireGuard": 100,      # простой, быстрый, стабильный
-                "AmneziaWG": 80,       # WG + маскировка, чуть сложнее обычного WG
-                "Lightway": 0,         # мало данных
-                "SoftEther": -20,      # мощный, но сложнее и не самый лёгкий
-                "IKEv2/IPSec": 40,     # стабильный мобильный вариант, но зависит от сети
-                "SSTP": -80,           # TCP/TLS, может быть медленным и тяжёлым
-                "HTTP Proxy": -50,     # не универсален, не полноценный VPN
-                "Shadowsocks": 20,     # простой прокси, может быть стабильным при нормальной сети
-                "Trojan": 30,          # может быть стабильным при хорошей настройке TLS
-                "VLESS": 40,           # гибкий, но качество сильно зависит от конфига
-                "VMess": -20,          # старее и тяжелее VLESS
-                "Hysteria": 30,        # хорош при потерях, но UDP/QUIC может быть нестабилен в некоторых сетях
-                "Hysteria2": 40,       # новее Hysteria, полезен при плохих сетях
-                "TUIC": 20,            # QUIC-based, потенциально хорошо, но зависит от сети
-                "NaiveProxy": 10,      # может выглядеть как обычный HTTPS, но не универсален
-                "SSH Tunnel": -30,     # простой, но не лучший для постоянного транспорта
-                "MTProto Proxy": -100, # специализирован под Telegram, не общий стабильный транспорт
+                "OpenVPN": -150, #некоторые DPI знает характер
+                "WireGuard": -150, #некоторые DPI знает характер
+                "AmneziaWG": 100, # WG + маскировка
+                "Lightway": 0, # я хз
+                "SoftEther": 50, # для обхода создан, но он тяжёлый
+                "IKEv2/IPSec": 0, # я хз
+                "SSTP": -100, # для временного захода сойдёт
+                "SOCKS5": 0, # я хз
+                "HTTP Proxy": 0, # я хз
+                "Shadowsocks": 50, # как раз для этого, но в некоторых стран уже блокируется
+                "Trojan": 50, # как раз для этого, но думаю, если не правильно настроить, то лекго обноружить
+                "VLESS": 150, # как раз для этого создан
+                "VMess": 100, # как атернативный вариант VLESS
+                "Hysteria": 100, # хорош при потерях
+                "Hysteria2": 100, # тот же хисткрия, только новее
+                "QUIC": 0, # хз
+                "TUIC": 0, # хз
+                "NaiveProxy": 0, # хз
+                "SSH Tunnel": 0, # хз
+                "MTProto Proxy": 50 # для телеграмма он создан, но он основывается на SS, да и щас легко палится
             })
 
             current_mode = 3
@@ -220,8 +401,44 @@ def Selecting_mode():
             print("в данном моменте вы используете этот режим ")
             return  
 
-
     if mode == 4:
+        #Режим агента
+        if current_mode != 4:
+            # Пришлось Чату GPT попросить, т. к. для меня стабильность -- анти-DPI протокол или его провайдер не отвалился за 3 дня
+            mode_scores.update ({
+                "OpenVPN": 20,         # старый, тяжёлый, но зрелый и предсказуемый
+                "WireGuard": 100,      # простой, быстрый, стабильный
+                "AmneziaWG": 80,       # WG + маскировка, чуть сложнее обычного WG
+                "Lightway": 0,         # мало данных
+                "SoftEther": -20,      # мощный, но сложнее и не самый лёгкий
+                "IKEv2/IPSec": 40,     # стабильный мобильный вариант, но зависит от сети
+                "SSTP": -80,           # TCP/TLS, может быть медленным и тяжёлым
+                "SOCKS5": 0, # я хз
+                "HTTP Proxy": -50,     # не универсален, не полноценный VPN
+                "Shadowsocks": 20,     # простой прокси, может быть стабильным при нормальной сети
+                "Trojan": 30,          # может быть стабильным при хорошей настройке TLS
+                "VLESS": 40,           # гибкий, но качество сильно зависит от конфига
+                "VMess": -20,          # старее и тяжелее VLESS
+                "Hysteria": 30,        # хорош при потерях, но UDP/QUIC может быть нестабилен в некоторых сетях
+                "Hysteria2": 40,       # новее Hysteria, полезен при плохих сетях
+                "QUIC": 0, # хз
+                "TUIC": 20,            # QUIC-based, потенциально хорошо, но зависит от сети
+                "NaiveProxy": 10,      # может выглядеть как обычный HTTPS, но не универсален
+                "SSH Tunnel": -30,     # простой, но не лучший для постоянного транспорта
+                "MTProto Proxy": -100, # специализирован под Telegram, не общий стабильный транспорт
+            })
+
+            current_mode = 4
+            calcul_result()
+            print("Приоретет изменён, смотрити в 'список прироритетных протоколов' ")
+            print(current_mode)
+            return
+        else:
+            print("в данном моменте вы используете этот режим ")
+            return  
+
+
+    if mode == 5:
         print("Для этой версии программы не работает")
         return
     
@@ -248,10 +465,11 @@ Selecting_mode_menu = """
 Выберите режим
 ---------------------------------
 
-1. Игровой
-2. обход 
-3. агент 
-4. авто (Для этой версии программы не работает)
+1. Игровой: для стабильной игры
+2. Обход методом Heracleum: обход любой ценой
+3. Обход методом Шпиона: обход + стабильность
+4. Агент: стабильность
+5. Авто: Алгоритм сам выбирает (Для этой версии программы не работает)
 ---------------------------------
 0 -- Выход
 """
@@ -262,13 +480,12 @@ menu_text = """
 ---------------------------------
 
 1 -- создать псевдорандомный сервер (щас это просто кликер)
-2 -- регион блокирует протокол
+2 -- регион обнаруживает/блокирует протокол
 3 -- показать список серверов
-4 -- Список протоколов и технологий
+4 -- список протоколов и технологий
 5 -- список приоритетных протоколов
-6 -- Выбор режима ATE: Игровой, обход, агент, авто
+6 -- Выбор режима и методом ATE
 7 -- Симуляция деградации сети (недоступно)
-Типо: packet loss вырос; ping скачет; throttling.
 
 ---------------------------------
 0 -- выход
@@ -297,6 +514,7 @@ VLESS
 VMess
 Hysteria
 Hysteria2
+QUIC
 TUIC
 NaiveProxy
 SSH Tunnel
@@ -356,7 +574,7 @@ SoftEther server/client
 
 menu_block = """
 ---------------------------------
-Что блокируется?
+Что обнаруживает/блокирует?
 ---------------------------------
 VPN
 
@@ -378,10 +596,11 @@ Proxy / Tunnel Protocols
 13. VMess
 14. Hysteria
 15. Hysteria2
-16. TUIC
-17. NaiveProxy
-18. SSH Tunnel
-19. MTProto Proxy (протокол для Телеграма)
+16. QUIC
+17. TUIC
+18. NaiveProxy
+19. SSH Tunnel
+20. MTProto Proxy (протокол для Телеграма)
 ----------------------------------
 0. Выход
 """
@@ -422,8 +641,6 @@ def menu():
             print(blocked_scores)
             print("Режим")
             print(mode_scores)
-            print("Итог (сумма по умолчанию, заблокированых протоколов и режим)")
-            print(clamp_score)
             print("Итог (сумма по умолчанию, заблокированых протоколов, режим и по сортировки лучший --> худший)")
             calcul_result()
             sorted_final = sorted(
