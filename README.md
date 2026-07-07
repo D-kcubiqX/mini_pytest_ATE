@@ -41,4 +41,4 @@
 ---
 ## Настроение разработчика
 
-![Мем](images/progress.png)
+![Мем](image/progress.jpg)
