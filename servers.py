@@ -161,26 +161,26 @@ def generate_server_stats():
 #5–30 Мбит/с - плохо
 #<5 Мбит/с - очень плохо
     if random.random() < 0.65:
-        Download = random.randint(100, 2500)
+        download_speed = random.randint(100, 2500)
     elif random.random() < 0.85:
-        Download = random.randint(30, 100)
+        download_speed = random.randint(30, 100)
     elif random.random() < 0.97:
-        Download = random.randint(5, 30)
+        download_speed = random.randint(5, 30)
     else:
-        Download = random.randint(1, 5)
+        download_speed = random.randint(1, 5)
 
 #50–500+ Мбит/с - отлично
 #10–50 Мбит/с - нормально
 #2–10 Мбит/с - плохо
 #<2 Мбит/с - очень плохо
     if random.random() < 0.65:
-        upload = random.randint(50, 1500)
+        upload_speed = random.randint(50, 1500)
     elif random.random() < 0.85:
-        upload = random.randint(10, 50)
+        upload_speed = random.randint(10, 50)
     elif random.random() < 0.97:
-        upload = random.randint(2, 10)  
+        upload_speed = random.randint(2, 10)  
     else:
-        upload = random.randint(1, 9)
+        upload_speed = random.randint(1, 9)
 
     country = random.choice(list(regions.keys()))
     city = random.choice(regions[country])
@@ -191,8 +191,8 @@ def generate_server_stats():
     print(f"Пинг: {ping_ms_tcp} мс по TCP")
     print(f"Искажение/дрожание: {jitter} мс")
     print(f"Потеря пакетов: {loss:.2f}%")
-    print(f"Скачивание: {Download} Мбит/с" )
-    print(f"Загрузки: {upload} Мбит/с" )
+    print(f"Скачивание: {download_speed} Мбит/с" )
+    print(f"Загрузки: {upload_speed} Мбит/с" )
     print(f"CPU/разгрузка сервера: {cpu}%")
     print(f"Страна и город: {country}, {city}")
     print("Поддерживаемый протокол: [по умолчанию все]" )
