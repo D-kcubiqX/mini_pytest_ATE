@@ -1,5 +1,5 @@
 from protocols import protocols
-from scores import region_score, calcul_result, mode_scores
+from scores import region_scores, calcul_result, mode_scores, manual_scores, clamp_score
 from texts import menu_block, menu_block_protocol, menu_block_profile, Selecting_mode_menu
 from protocol_profiles import profiles
 import utils
@@ -14,7 +14,7 @@ def block_protocol_menu():
     #WireGuard Detection
     #OpenVPN Detection
     #VLESS Detection
-    global region_score
+    global region_scores
     utils.clear_terminal()
     print(menu_block)
     mb_choice = input("Введите в этом поле: ")
@@ -26,25 +26,43 @@ def block_protocol_menu():
         return
     if mb_choice1 == 1:
         #Надо ещё разблокировку сделать
-        global region_score
+        global region_scores
+        global manual_scores
         utils.clear_terminal()
         print(menu_block_protocol)
-        choice = input("Введите в этом поле: ")
-        if not choice.isdigit():
-            print("Нужно ввести число")
-            return
-        protocol_block = int(choice)
-        if protocol_block == 0:
-            return
-        if 1 <= protocol_block <= len(protocols):
-            blocked_protocol = protocols[protocol_block - 1]
-            print("Регион блокирует:", blocked_protocol)
-            region_score[blocked_protocol] = -200
-            calcul_result()
-            print("Очки протокола теперь:", region_score[blocked_protocol])
-        else:
+        #choice = input("Введите в этом поле: ")
+        protocol_number = int(input("Выберите протокол: "))
+        #if not protocol_number.isdigit():
+        #    print("Нужно ввести число")
+        if protocol_number >= len(protocols):
             print("Такого протокола нет")
+        else:
+            protocol = protocols[protocol_number - 1]
+            new_score = int(input("""Введите оценку от -200 до 200, где -200 -- почти или полностью исключить, а 200 -- настоятельно рекомендую. 0 -- нейтральный/сброс: """))
+            manual_scores[protocol] = clamp_score(new_score)
+            print(f"Очки {protocol} теперь: {manual_scores[protocol]}")
+            calcul_result()
+
+        if protocol_number == 0:
+            return
+
+        #    return
+        #protocol_block = int(choice)
+        #if protocol_block == 0:
+        #    return
+        #if 1 <= protocol_block <= len(protocols):
+        #    blocked_protocol = protocols[protocol_block - 1]
+        #    print("Регион блокирует:", blocked_protocol)
+        #    manual_scores[blocked_protocol] = -200
+        #    calcul_result()
+        #    print("Очки протокола теперь:", manual_scores[blocked_protocol])
     if mb_choice1 == 2:
+        for protocol in protocols:
+            manual_scores[protocol] = 0
+        calcul_result()
+        print("приорететы сброшены")
+
+    if mb_choice1 == 3:
         utils.clear_terminal()
         print(menu_block_profile)
         choice = input("Введите в этом поле: ")
@@ -55,24 +73,36 @@ def block_protocol_menu():
         if profile_block == 0:
             return
         if profile_block == 1:
-            region_score.update(profiles["Россия"])
+            region_scores.update(profiles["Россия"])
             calcul_result()
             print("Применён профиль")
 
         if profile_block == 2:
-            region_score.update(profiles["Китай"])
+            region_scores.update(profiles["Китай"])
             calcul_result()
             print("Применён профиль")
             
         if profile_block == 3:
-            region_score.update(profiles["Туркменистан"])
+            region_scores.update(profiles["Туркменистан"])
             calcul_result()
             print("Применён профиль")
 
         if profile_block == 4:
-            region_score.update(profiles["Иран"])
+            region_scores.update(profiles["Иран"])
             calcul_result()
             print("Применён профиль")
+    if mb_choice1 == 4:
+            for protocol in protocols:
+                region_scores[protocol] = 0
+            calcul_result()
+            print("Профиль сброшены")
+    
+    if mb_choice1 == 5:
+        for protocol in protocols:
+            region_scores[protocol] = 0
+            manual_scores[protocol] = 0
+        calcul_result()
+        print("Профиль и приорететы сброшены")
 
 def Selecting_mode():
     global current_mode

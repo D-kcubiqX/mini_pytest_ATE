@@ -1,9 +1,11 @@
 from protocols import protocols
 scores = {}
 base_scores = {}
-region_score = {}
+region_scores = {}
 mode_scores = {}
+manual_scores = {}
 final_score = {}
+servers_score = {}
 
 MIN_SCORE = -200
 MAX_SCORE = 200
@@ -12,8 +14,9 @@ MAX_SCORE = 200
 for protocol in protocols:
     scores[protocol] = 0
     base_scores[protocol] = 0
-    region_score[protocol] = 0
+    region_scores[protocol] = 0
     mode_scores[protocol] = 0
+    manual_scores[protocol] = 0
     final_score[protocol] = 0
 
 def clamp_score(value):
@@ -22,16 +25,19 @@ def clamp_score(value):
 def calcul_result():
     global final_score
     global base_scores 
-    global region_score 
+    global region_scores 
     global mode_scores 
+    global manual_scores
+    global final_score
     for protocol in protocols:
-        if region_score[protocol] <= -200:
+        if manual_scores[protocol] <= -200:
             final_score[protocol] = -200
         else:
             total = (
                 base_scores[protocol]
                 + mode_scores[protocol]
-                + region_score[protocol]
+                + region_scores[protocol]
+                + manual_scores[protocol]
             )
 
             final_score[protocol] = clamp_score(total)

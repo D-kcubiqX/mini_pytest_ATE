@@ -10,8 +10,9 @@ def menu():
     while True:
         global final_score
         global base_scores 
-        global region_score 
+        global region_scores 
         global mode_scores
+        global manual_scores
         utils.clear_terminal()
         print(menu_text)
         choice = input("Введите в этом поле: ")
@@ -24,7 +25,7 @@ def menu():
         x = int(choice)
 
         if x == 1:
-            servers.generate_server_stats()
+            servers.create_and_save_server()
         elif x == 2:
             block_protocol_menu()
         elif x == 3:
@@ -39,7 +40,11 @@ def menu():
                 print(f"{protocol:15} : {score:+4}")
             print("----------------------------------")
             print("Региональная оценка")
-            for protocol, score in scores.region_score.items():
+            for protocol, score in scores.region_scores.items():
+                print(f"{protocol:15} : {score:+4}")
+            print("----------------------------------")
+            print("Пользовательский настройка")
+            for protocol, score in scores.manual_scores.items():
                 print(f"{protocol:15} : {score:+4}")
             print("----------------------------------")
             print("Режим")
