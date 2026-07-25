@@ -1,5 +1,3 @@
-<img width="475" height="213" alt="image" src="https://github.com/user-attachments/assets/de3c2f35-0a5e-428f-ad02-4710075cbaab" /># mini_pytest_ATE
-
 ## ATE (Adaptive Transport Engine)
 
 Экспериментальный проект по исследованию адаптивного выбора транспортов и параметров подключения на основе системы оценки.
