@@ -1,6 +1,6 @@
 from protocols import protocols
 from scores import region_scores, calcul_result, mode_scores, manual_scores, clamp_score
-from texts import menu_block, menu_block_protocol, menu_block_profile, Selecting_mode_menu
+from texts import menu_block, menu_block_protocol, menu_block_profile, profil_region_menu, Selecting_mode_menu
 from protocol_profiles import profiles
 import utils
 
@@ -92,10 +92,10 @@ def block_protocol_menu():
             calcul_result()
             print("Применён профиль")
     if mb_choice1 == 4:
-            for protocol in protocols:
-                region_scores[protocol] = 0
-            calcul_result()
-            print("Профиль сброшены")
+        for protocol in protocols:
+            region_scores[protocol] = 0
+        calcul_result()
+        print("Профиль сброшены")
     
     if mb_choice1 == 5:
         for protocol in protocols:
@@ -103,6 +103,88 @@ def block_protocol_menu():
             manual_scores[protocol] = 0
         calcul_result()
         print("Профиль и приорететы сброшены")
+
+def Profil_region():
+    global region_scores
+    utils.clear_terminal()
+    print(profil_region_menu)
+    choice = input("Введите в этом поле: ")
+    if not choice.isdigit():
+        print("Нужно ввести число")
+        return
+    profile_menu = int(choice)
+    if profile_menu == 0:
+        return
+    if profile_menu == 1:
+        global region_scores
+        print(menu_block_profile)
+        profiles_choice = input("Введите в этом поле: ")
+        if not profiles_choice.isdigit():
+            print("Нужно ввести число")
+            return
+        profiles_choice = int(profiles_choice)
+        if profiles_choice == 0:
+            return
+        if profiles_choice == 1:
+            region_scores.update(profiles["Россия"])
+            calcul_result()
+            print("Применён профиль")
+
+        if profiles_choice == 2:
+            region_scores.update(profiles["Китай"])
+            calcul_result()
+            print("Применён профиль")
+            
+        if profiles_choice == 3:
+            region_scores.update(profiles["Туркменистан"])
+            calcul_result()
+            print("Применён профиль")
+
+        if profiles_choice == 4:
+            region_scores.update(profiles["Иран"])
+            calcul_result()
+            print("Применён профиль")
+    if profile_menu == 2:
+        for protocol in protocols:
+            region_scores[protocol] = 0
+        calcul_result()
+        print("Профиль сброшены")
+
+def manual_setting():
+    global manual_scores
+    utils.clear_terminal()
+    print(profil_region_menu)
+    manual_choice = input("Введите в этом поле: ")
+    if not manual_choice.isdigit():
+        print("Нужно ввести число")
+        return
+    manual_choice = int(manual_choice)
+    if manual_choice == 0:
+        return
+    if manual_choice == 1:
+        utils.clear_terminal()
+        print(menu_block_protocol)
+        #choice = input("Введите в этом поле: ")
+        protocol_number = int(input("Выберите протокол: "))
+        #if not protocol_number.isdigit():
+        #    print("Нужно ввести число")
+        if protocol_number >= len(protocols):
+            print("Такого протокола нет")
+        else:
+            protocol = protocols[protocol_number - 1]
+            new_score = int(input("""Введите оценку от -200 до 200, где -200 -- почти или полностью исключить, а 200 -- настоятельно рекомендую. 0 -- нейтральный/сброс: """))
+            manual_scores[protocol] = clamp_score(new_score)
+            print(f"Очки {protocol} теперь: {manual_scores[protocol]}")
+            calcul_result()
+
+        if protocol_number == 0:
+            return
+    if manual_choice == 2:
+        for protocol in protocols:
+            manual_scores[protocol] = 0
+        calcul_result()
+        print("приорететы сброшены")        
+
 
 def Selecting_mode():
     global current_mode

@@ -2,6 +2,7 @@ import random
 import utils
 import json
 import os
+from scores import calculate_server_score
 SERVERS_FILE = "servers.json"
 
 regions = {
@@ -182,18 +183,31 @@ def create_and_save_server():
     print(f"Сервер {server['id']} сохранён.")
 
 def show_servers():
+    utils.clear_terminal()
     saved_servers = load_servers()
 
     if not saved_servers:
         print("Сохранённых серверов нет.")
         return
-
-    for server in saved_servers:
+    
+    for i, server in enumerate(saved_servers):
         for key, value in server.items():
             if key in units:
                 print(f"{labels[key]}: {value} {units[key]}")
             else:
                 print(f"{labels[key]}: {value}")
+
+        if i != len(saved_servers) -1:
+            print("-" * 34)
+
+    #for server in saved_servers:
+    #    for key, value in server.items():
+    #        if key in units:
+    #            print(f"{labels[key]}: {value} {units[key]}")
+    #        else:
+    #            print(f"{labels[key]}: {value}")
+
+        
 
 def generate_server():
     utils.clear_terminal()
@@ -292,10 +306,34 @@ def generate_server():
     print(f"CPU/разгрузка сервера: {cpu}%")
     print(f"Страна и город: {country}, {city}")
     print("Поддерживаемый протокол: [по умолчанию все]" )
-    print("Обнаруживает DPI?:", dpi_detector)
+    #print("Обнаруживает DPI?:", dpi_detector)
 
     return server
     
+def show_priority_servers():
+    saved_servers = load_servers()
+
+    if not saved_servers:
+        print("Сохранённых серверов нет.")
+        return
+
+    sorted_servers = sorted(
+        saved_servers,
+        key=calculate_server_score,
+        reverse=True
+    )
+
+    for place, server in enumerate(sorted_servers, start=1):
+        score = calculate_server_score(server)
+
+        print(f"{place}. {server['id']}")
+        print(f"Страна: {server['country']}")
+        print(f"Город: {server['city']}")
+        print(f"Итоговый балл: {score:.2f}")
+
+        if place != len(sorted_servers):
+            print("-" * 34)
+
 
 #server_id = input("Введите ID сервера: ")
 
@@ -311,16 +349,6 @@ def generate_server():
 #with open("servers.json", "r", encoding="utf-8") as file:
 #    servers = json.load(file)
 
-#def calculate_server_score(server):
-#    score = 0
-#
-#    score -= server["ping"]
-#    score -= server["jitter"] * 2
-#    score -= server["packet_loss"] * 20
-#    score -= server["cpu"] * 0.5
-#    score += server["download"] * 0.05
-#    score += server["upload"] * 0.03
-#
-#    return score
+
 #best_server = max(servers, key=calculate_server_score)
 

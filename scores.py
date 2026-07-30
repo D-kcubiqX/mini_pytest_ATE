@@ -42,6 +42,19 @@ def calcul_result():
 
             final_score[protocol] = clamp_score(total)
 
+def calculate_server_score(server):
+    score = 0
+
+    score -= server["ping"]
+    score -= server["jitter"] * 2
+    score -= server["packet_loss"] * 20
+    score -= server["cpu"] * 0.5
+    score += server["download"] * 0.05
+    score += server["upload"] * 0.03
+
+    return score
+
+
 #для оценки:
 #100  = рекомендую
 #50   = скорее хорошо

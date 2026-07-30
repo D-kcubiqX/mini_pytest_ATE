@@ -5,3 +5,10 @@ def clear_terminal():
 
     else:
         os.system("clear")
+
+def digit_checker(value):
+    if not value.isdigit():
+        print("Нужно ввести число")
+        return None
+
+    return int(value)
