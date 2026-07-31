@@ -1,0 +1,57 @@
+[
+    {
+        "id": "srv-0001",
+        "country": "Казахстан",
+        "city": "Almaty",
+        "ping": 40,
+        "jitter": 0,
+        "packet_loss": 1.73,
+        "download": 88,
+        "upload": 47,
+        "cpu": 55
+    },
+    {
+        "id": "srv-0002",
+        "country": "Япония",
+        "city": "Tokyo",
+        "ping": 148,
+        "jitter": 5,
+        "packet_loss": 4.02,
+        "download": 928,
+        "upload": 274,
+        "cpu": 57
+    },
+    {
+        "id": "srv-0003",
+        "country": "Турция",
+        "city": "Ankara",
+        "ping": 31,
+        "jitter": 1,
+        "packet_loss": 0.96,
+        "download": 53,
+        "upload": 1055,
+        "cpu": 38
+    },
+    {
+        "id": "srv-0004",
+        "country": "Германия",
+        "city": "Berlin",
+        "ping": 33,
+        "jitter": 16,
+        "packet_loss": 0.57,
+        "download": 1537,
+        "upload": 721,
+        "cpu": 10
+    },
+    {
+        "id": "srv-0005",
+        "country": "ОАЭ",
+        "city": "Abu Dhabi",
+        "ping": 97,
+        "jitter": 1,
+        "packet_loss": 1.92,
+        "download": 584,
+        "upload": 34,
+        "cpu": 64
+    }
+]
