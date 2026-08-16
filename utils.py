@@ -6,9 +6,12 @@ def clear_terminal():
     else:
         os.system("clear")
 
-def digit_checker(value):
-    if not value.isdigit():
-        print("Нужно ввести число")
-        return None
+def digit_checker():
+    while True:
+        value = input("Введите число: ")
 
-    return int(value)
+        if value.isdigit():
+            return int(value)
+
+        print("Нужно ввести число")
+        input("Нажмите Enter...")

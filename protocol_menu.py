@@ -1,12 +1,13 @@
 from protocols import protocols
-from scores import region_scores, calcul_result, mode_scores, manual_scores, clamp_score
-from texts import menu_block, menu_block_protocol, menu_block_profile, profil_region_menu, Selecting_mode_menu
+from scores import region_scores, calcul_result, mode_scores, manual_scores, clamp_score, base_scores, final_score, target_scores
+from texts import menu_block_protocol, menu_block_profile, profil_region_menu, Selecting_mode_menu, Selecting_target_menu
 from protocol_profiles import profiles
 import utils
 
-current_mode = 0
+current_mode = 1
+current_target = 1
 
-def block_protocol_menu():
+#def block_protocol_menu():
     #Регион / Провайдер
     #DPI
     #UDP Block
@@ -14,115 +15,51 @@ def block_protocol_menu():
     #WireGuard Detection
     #OpenVPN Detection
     #VLESS Detection
-    global region_scores
+
+def priority_protocol_tech():
     utils.clear_terminal()
-    print(menu_block)
-    mb_choice = input("Введите в этом поле: ")
-    if not mb_choice.isdigit():
-        print("Нужно ввести число")
-        return
-    mb_choice1 = int(mb_choice)
-    if mb_choice1 == 0:
-        return
-    if mb_choice1 == 1:
-        #Надо ещё разблокировку сделать
-        global region_scores
-        global manual_scores
-        utils.clear_terminal()
-        print(menu_block_protocol)
-        #choice = input("Введите в этом поле: ")
-        protocol_number = int(input("Выберите протокол: "))
-        #if not protocol_number.isdigit():
-        #    print("Нужно ввести число")
-        if protocol_number >= len(protocols):
-            print("Такого протокола нет")
-        else:
-            protocol = protocols[protocol_number - 1]
-            new_score = int(input("""Введите оценку от -200 до 200, где -200 -- почти или полностью исключить, а 200 -- настоятельно рекомендую. 0 -- нейтральный/сброс: """))
-            manual_scores[protocol] = clamp_score(new_score)
-            print(f"Очки {protocol} теперь: {manual_scores[protocol]}")
-            calcul_result()
-
-        if protocol_number == 0:
-            return
-
-        #    return
-        #protocol_block = int(choice)
-        #if protocol_block == 0:
-        #    return
-        #if 1 <= protocol_block <= len(protocols):
-        #    blocked_protocol = protocols[protocol_block - 1]
-        #    print("Регион блокирует:", blocked_protocol)
-        #    manual_scores[blocked_protocol] = -200
-        #    calcul_result()
-        #    print("Очки протокола теперь:", manual_scores[blocked_protocol])
-    if mb_choice1 == 2:
-        for protocol in protocols:
-            manual_scores[protocol] = 0
-        calcul_result()
-        print("приорететы сброшены")
-
-    if mb_choice1 == 3:
-        utils.clear_terminal()
-        print(menu_block_profile)
-        choice = input("Введите в этом поле: ")
-        if not choice.isdigit():
-            print("Нужно ввести число")
-            return
-        profile_block = int(choice)
-        if profile_block == 0:
-            return
-        if profile_block == 1:
-            region_scores.update(profiles["Россия"])
-            calcul_result()
-            print("Применён профиль")
-
-        if profile_block == 2:
-            region_scores.update(profiles["Китай"])
-            calcul_result()
-            print("Применён профиль")
-            
-        if profile_block == 3:
-            region_scores.update(profiles["Туркменистан"])
-            calcul_result()
-            print("Применён профиль")
-
-        if profile_block == 4:
-            region_scores.update(profiles["Иран"])
-            calcul_result()
-            print("Применён профиль")
-    if mb_choice1 == 4:
-        for protocol in protocols:
-            region_scores[protocol] = 0
-        calcul_result()
-        print("Профиль сброшены")
-    
-    if mb_choice1 == 5:
-        for protocol in protocols:
-            region_scores[protocol] = 0
-            manual_scores[protocol] = 0
-        calcul_result()
-        print("Профиль и приорететы сброшены")
+    print("по умолчанию")
+    for protocol, score in base_scores.items():
+        print(f"{protocol:15} : {score:+4}")
+    print("----------------------------------")
+    print("Региональная оценка")
+    for protocol, score in region_scores.items():
+        print(f"{protocol:15} : {score:+4}")
+    print("----------------------------------")
+    print("Пользовательский настройка")
+    for protocol, score in manual_scores.items():
+        print(f"{protocol:15} : {score:+4}")
+    print("----------------------------------")
+    print("Режим")
+    for protocol, score in mode_scores.items():
+        print(f"{protocol:15} : {score:+4}")
+    print("----------------------------------")
+    print("Итог (сумма по умолчанию, заблокированых протоколов, режим и по сортировки лучший --> худший)")
+    calcul_result()
+    sorted_final = sorted(
+        final_score.items(),
+        key=lambda x: x[1],
+        reverse=True
+        )
+    for protocol, score in sorted_final:
+        print(f"{protocol:15} : {score:+4}")
 
 def Profil_region():
     global region_scores
     utils.clear_terminal()
     print(profil_region_menu)
-    choice = input("Введите в этом поле: ")
-    if not choice.isdigit():
-        print("Нужно ввести число")
+    choice = utils.digit_checker()
+
+    if choice == None:
+        input("\nНажми Enter...")
+        pass
+
+    if choice == 0:
         return
-    profile_menu = int(choice)
-    if profile_menu == 0:
-        return
-    if profile_menu == 1:
+    if choice == 1:
         global region_scores
         print(menu_block_profile)
-        profiles_choice = input("Введите в этом поле: ")
-        if not profiles_choice.isdigit():
-            print("Нужно ввести число")
-            return
-        profiles_choice = int(profiles_choice)
+        profiles_choice = utils.digit_checker()
         if profiles_choice == 0:
             return
         if profiles_choice == 1:
@@ -144,7 +81,7 @@ def Profil_region():
             region_scores.update(profiles["Иран"])
             calcul_result()
             print("Применён профиль")
-    if profile_menu == 2:
+    if choice == 2:
         for protocol in protocols:
             region_scores[protocol] = 0
         calcul_result()
@@ -154,14 +91,10 @@ def manual_setting():
     global manual_scores
     utils.clear_terminal()
     print(profil_region_menu)
-    manual_choice = input("Введите в этом поле: ")
-    if not manual_choice.isdigit():
-        print("Нужно ввести число")
+    choice = utils.digit_checker()
+    if choice == 0:
         return
-    manual_choice = int(manual_choice)
-    if manual_choice == 0:
-        return
-    if manual_choice == 1:
+    if choice == 1:
         utils.clear_terminal()
         print(menu_block_protocol)
         #choice = input("Введите в этом поле: ")
@@ -179,11 +112,135 @@ def manual_setting():
 
         if protocol_number == 0:
             return
-    if manual_choice == 2:
+    if choice == 2:
         for protocol in protocols:
             manual_scores[protocol] = 0
         calcul_result()
         print("приорететы сброшены")        
+
+def Selecting_target():
+    global current_target
+    global target_scores
+    utils.clear_terminal()
+    print(Selecting_target_menu)
+    target = utils.digit_checker()
+    if target == 0:
+        return
+    if target == 1:
+        if current_mode != 1:
+            for protocol in protocols:
+                target_scores[protocol] = 0        
+    if target == 2:
+        if current_target != 2:
+            target_scores.update({
+                "OpenVPN": -50, #условно т.к есть UDP (50) и TCP (-100)
+                "WireGuard": 150,
+                "AmneziaWG": 120,
+                "Lightway": 120,
+                "SoftEther": 0, # для обхода создан, а так хз
+                "IKEv2/IPSec": 80,
+                "SSTP": -100,
+                "SOCKS5": 20,
+                "HTTP Proxy": -50,
+                "Shadowsocks": 80,
+                "Trojan": 40,
+                "VLESS": 80,
+                "VMess": 30,
+                "Hysteria": 120,
+                "Hysteria2": 150,
+                "QUIC": 0, # неизвестно
+                "TUIC": 150,
+                "NaiveProxy": -20,
+                "SSH Tunnel": -100,
+                "MTProto Proxy": -100
+                })
+             
+            current_target = 2
+            calcul_result()
+            print("цель изменён, смотрити в 'список прироритетных протоколов' ")
+            print(current_target)
+            return
+        else:
+            print("в данном моменте вы используете этот цель ")
+            return          
+    if target == 3:
+        if current_target != 3:
+            target_scores.update({
+                "OpenVPN": 60, #условно т.к есть UDP (80) и TCP (20)
+                "WireGuard": 120,
+                "AmneziaWG": 100,
+                "Lightway": 120,
+                "SoftEther": 60,
+                "IKEv2/IPSec": 100,
+                "SSTP": 20,
+                "SOCKS5": 50,
+                "HTTP Proxy": 30,
+                "Shadowsocks": 100,
+                "Trojan": 100,
+                "VLESS": 100,
+                "VMess": 80,
+                "Hysteria": 130,
+                "Hysteria2": 150,
+                "QUIC": 0, # неизвестно
+                "TUIC": 140,
+                "NaiveProxy": 80,
+                "SSH Tunnel": -20,
+                "MTProto Proxy": -100
+                })
+             
+            current_target = 3
+            calcul_result()
+            print("цель изменён, смотрити в 'список прироритетных протоколов' ")
+            print(current_target)
+            return
+        else:
+            print("в данном моменте вы используете этот цель ")
+            return
+
+    if target == 4:
+        if current_target != 4:
+            target_scores.update({
+                "OpenVPN": 80, #условно т.к есть UDP (100) и TCP (80)
+                "WireGuard": 120,
+                "AmneziaWG": 100,
+                "Lightway": 100,
+                "SoftEther": 100,
+                "IKEv2/IPSec": 120,
+                "SSTP": 80,
+                "SOCKS5": 50,
+                "HTTP Proxy": 40,
+                "Shadowsocks": 80,
+                "Trojan": 100,
+                "VLESS": 100,
+                "VMess": 80,
+                "Hysteria": 80,
+                "Hysteria2": 100,
+                "QUIC": 0, # неизвестно
+                "TUIC": 100,
+                "NaiveProxy": 100,
+                "SSH Tunnel": 100,
+                "MTProto Proxy": 0
+                })
+             
+            current_target = 4
+            calcul_result()
+            print("цель изменён, смотрити в 'список прироритетных протоколов' ")
+            print(current_target)
+            return
+        else:
+            print("в данном моменте вы используете этот цель ")
+            return
+    
+    if target == 5:
+        print("Для этой версии программы не работает")
+        return
+
+
+#| Протокол      | Игры | Стриминг | Работа |
+#| ------------- | ---: | -------: | -----: |
+#| OpenVPN UDP   |  +50 |      +80 |   +100 |
+#| OpenVPN TCP   | -100 |      +20 |    +80 |
+
 
 
 def Selecting_mode():
@@ -191,39 +248,15 @@ def Selecting_mode():
     global mode_scores
     utils.clear_terminal()
     print(Selecting_mode_menu)
-    choice = input("Введите в этом поле: ")
-    if not choice.isdigit():
-        print("Нужно ввести число")
-        return
-    mode = int(choice)
+    mode = utils.digit_checker()
     if mode == 0:
         return
     
     if mode == 1:
-        #игровой режим
+        #Без режима
         if current_mode != 1:
-            mode_scores.update({
-                "OpenVPN": -30, #тяжелее и медленнее
-                "WireGuard": 100, #низкая задержка
-                "AmneziaWG": 100, # WG + маскеровка
-                "Lightway": 0, # я хз
-                "SoftEther": -100, # для обхода создан
-                "IKEv2/IPSec": 0, # я хз
-                "SSTP": -200, # медленный, только на win и то после некоторое время сам выключался или же TCP поверх TCP - боль
-                "SOCKS5": 0, # я хз
-                "HTTP Proxy": 0, # я хз
-                "Shadowsocks": 0, # я хз
-                "Trojan": 0, # я хз
-                "VLESS": -40, # играть можно но на костылях, т. к. обход важнее задержки
-                "VMess": -80, # староват и тяжелее
-                "Hysteria": 100, # хорош при потерях
-                "Hysteria2": 100, # тот же хисткрия, только новее
-                "QUIC": 0, # хз
-                "TUIC": 0, # хз
-                "NaiveProxy": 0, # хз
-                "SSH Tunnel": 0, # хз
-                "MTProto Proxy": 0 # он для телеграма создан, так что 0 
-            })
+            for protocol in protocols:
+                mode_scores[protocol] = 0
 
             current_mode = 1
             calcul_result()
@@ -232,8 +265,8 @@ def Selecting_mode():
             return
         else:
             print("в данном моменте вы используете этот режим ")
-            return 
-        
+            return  
+            
     if mode == 2:
         #Режим борщивика
         if current_mode != 2:

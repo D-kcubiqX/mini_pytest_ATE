@@ -3,6 +3,7 @@ scores = {}
 base_scores = {}
 region_scores = {}
 mode_scores = {}
+target_scores = {}
 manual_scores = {}
 final_score = {}
 servers_score = {}
@@ -16,6 +17,7 @@ for protocol in protocols:
     base_scores[protocol] = 0
     region_scores[protocol] = 0
     mode_scores[protocol] = 0
+    target_scores[protocol] = 0
     manual_scores[protocol] = 0
     final_score[protocol] = 0
 
@@ -29,6 +31,8 @@ def calcul_result():
     global mode_scores 
     global manual_scores
     global final_score
+    global target_scores
+    
     for protocol in protocols:
         if manual_scores[protocol] <= -200:
             final_score[protocol] = -200
@@ -38,6 +42,7 @@ def calcul_result():
                 + mode_scores[protocol]
                 + region_scores[protocol]
                 + manual_scores[protocol]
+                + target_scores[protocol]
             )
 
             final_score[protocol] = clamp_score(total)
