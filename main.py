@@ -1,7 +1,7 @@
 import utils
 from texts import list_protocol, menu_text
 import servers
-from protocol_menu import Selecting_mode, Profil_region, manual_setting, priority_protocol_tech
+from protocol_menu import Selecting_mode, Profil_region, manual_setting, priority_protocol_tech, Selecting_target
 
 #Progress is impossible without beer🍺
 
@@ -36,7 +36,7 @@ def menu():
         elif x == 9:
             Selecting_mode()
         elif x == 10:
-            print("В данном моменте не доступен")
+            Selecting_target()
         elif x == 11:
             print("В данном моменте не доступен")
             

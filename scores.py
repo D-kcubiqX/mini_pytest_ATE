@@ -1,5 +1,4 @@
 from protocols import protocols
-scores = {}
 base_scores = {}
 region_scores = {}
 mode_scores = {}
@@ -7,13 +6,18 @@ target_scores = {}
 manual_scores = {}
 final_score = {}
 servers_score = {}
+scores = {}
+ping_weight = 1
+jitter_weight = 1
+loss_weight = 1
+download_weight = 1
+upload_weight = 1
 
 MIN_SCORE = -200
 MAX_SCORE = 200
 
 
 for protocol in protocols:
-    scores[protocol] = 0
     base_scores[protocol] = 0
     region_scores[protocol] = 0
     mode_scores[protocol] = 0
@@ -48,16 +52,16 @@ def calcul_result():
             final_score[protocol] = clamp_score(total)
 
 def calculate_server_score(server):
-    score = 0
+    servers_score = 0
 
-    score -= server["ping"]
-    score -= server["jitter"] * 2
-    score -= server["packet_loss"] * 20
-    score -= server["cpu"] * 0.5
-    score += server["download"] * 0.05
-    score += server["upload"] * 0.03
+    servers_score -= server["ping"] * ping_weight
+    servers_score -= server["jitter"] * 2 * jitter_weight
+    servers_score -= server["packet_loss"] * 20 * loss_weight
+    servers_score -= server["cpu"] * 0.5
+    servers_score += server["download"] * 0.05 * download_weight
+    servers_score += server["upload"] * 0.03 * upload_weight
 
-    return score
+    return servers_score
 
 
 #для оценки:

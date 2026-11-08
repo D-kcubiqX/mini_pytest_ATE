@@ -1,5 +1,5 @@
 from protocols import protocols
-from scores import region_scores, calcul_result, mode_scores, manual_scores, clamp_score, base_scores, final_score, target_scores
+import scores
 from texts import menu_block_protocol, menu_block_profile, profil_region_menu, Selecting_mode_menu, Selecting_target_menu
 from protocol_profiles import profiles
 import utils
@@ -19,25 +19,25 @@ current_target = 1
 def priority_protocol_tech():
     utils.clear_terminal()
     print("по умолчанию")
-    for protocol, score in base_scores.items():
+    for protocol, score in scores.base_scores.items():
         print(f"{protocol:15} : {score:+4}")
     print("----------------------------------")
     print("Региональная оценка")
-    for protocol, score in region_scores.items():
+    for protocol, score in scores.region_scores.items():
         print(f"{protocol:15} : {score:+4}")
     print("----------------------------------")
     print("Пользовательский настройка")
-    for protocol, score in manual_scores.items():
+    for protocol, score in scores.manual_scores.items():
         print(f"{protocol:15} : {score:+4}")
     print("----------------------------------")
     print("Режим")
-    for protocol, score in mode_scores.items():
+    for protocol, score in scores.mode_scores.items():
         print(f"{protocol:15} : {score:+4}")
     print("----------------------------------")
     print("Итог (сумма по умолчанию, заблокированых протоколов, режим и по сортировки лучший --> худший)")
-    calcul_result()
+    scores.calcul_result()
     sorted_final = sorted(
-        final_score.items(),
+        scores.final_score.items(),
         key=lambda x: x[1],
         reverse=True
         )
@@ -57,34 +57,33 @@ def Profil_region():
     if choice == 0:
         return
     if choice == 1:
-        global region_scores
         print(menu_block_profile)
         profiles_choice = utils.digit_checker()
         if profiles_choice == 0:
             return
         if profiles_choice == 1:
-            region_scores.update(profiles["Россия"])
-            calcul_result()
+            scores.region_scores.update(profiles["Россия"])
+            scores.calcul_result()
             print("Применён профиль")
 
         if profiles_choice == 2:
-            region_scores.update(profiles["Китай"])
-            calcul_result()
+            scores.region_scores.update(profiles["Китай"])
+            scores.calcul_result()
             print("Применён профиль")
             
         if profiles_choice == 3:
-            region_scores.update(profiles["Туркменистан"])
-            calcul_result()
+            scores.region_scores.update(profiles["Туркменистан"])
+            scores.calcul_result()
             print("Применён профиль")
 
         if profiles_choice == 4:
-            region_scores.update(profiles["Иран"])
-            calcul_result()
+            scores.region_scores.update(profiles["Иран"])
+            scores.calcul_result()
             print("Применён профиль")
     if choice == 2:
         for protocol in protocols:
-            region_scores[protocol] = 0
-        calcul_result()
+            scores.region_scores[protocol] = 0
+        scores.calcul_result()
         print("Профиль сброшены")
 
 def manual_setting():
@@ -97,30 +96,32 @@ def manual_setting():
     if choice == 1:
         utils.clear_terminal()
         print(menu_block_protocol)
-        #choice = input("Введите в этом поле: ")
         protocol_number = int(input("Выберите протокол: "))
-        #if not protocol_number.isdigit():
-        #    print("Нужно ввести число")
         if protocol_number >= len(protocols):
             print("Такого протокола нет")
         else:
             protocol = protocols[protocol_number - 1]
             new_score = int(input("""Введите оценку от -200 до 200, где -200 -- почти или полностью исключить, а 200 -- настоятельно рекомендую. 0 -- нейтральный/сброс: """))
-            manual_scores[protocol] = clamp_score(new_score)
+            scores.manual_scores[protocol] = scores.clamp_score(new_score)
             print(f"Очки {protocol} теперь: {manual_scores[protocol]}")
-            calcul_result()
+            scores.calcul_result()
 
         if protocol_number == 0:
             return
     if choice == 2:
         for protocol in protocols:
-            manual_scores[protocol] = 0
-        calcul_result()
+            scores.manual_scores[protocol] = 0
+        scores.calcul_result()
         print("приорететы сброшены")        
 
 def Selecting_target():
     global current_target
     global target_scores
+    global ping_weight
+    global jitter_weight
+    global loss_weight
+    global download_weight
+    global upload_weight
     utils.clear_terminal()
     print(Selecting_target_menu)
     target = utils.digit_checker()
@@ -129,10 +130,17 @@ def Selecting_target():
     if target == 1:
         if current_mode != 1:
             for protocol in protocols:
-                target_scores[protocol] = 0        
+                scores.target_scores[protocol] = 0
+
+            scores.ping_weight = 1
+            scores.jitter_weight = 1
+            scores.loss_weight = 1
+            scores.download_weight = 1
+            scores.upload_weight = 1
+
     if target == 2:
         if current_target != 2:
-            target_scores.update({
+            scores.target_scores.update({
                 "OpenVPN": -50, #условно т.к есть UDP (50) и TCP (-100)
                 "WireGuard": 150,
                 "AmneziaWG": 120,
@@ -154,9 +162,15 @@ def Selecting_target():
                 "SSH Tunnel": -100,
                 "MTProto Proxy": -100
                 })
+
+            scores.ping_weight = 2.0
+            scores.jitter_weight = 2.0
+            scores.loss_weight = 3.0
+            scores.download_weight = 0.2
+            scores.upload_weight = 0.3
              
             current_target = 2
-            calcul_result()
+            scores.calcul_result()
             print("цель изменён, смотрити в 'список прироритетных протоколов' ")
             print(current_target)
             return
@@ -165,7 +179,7 @@ def Selecting_target():
             return          
     if target == 3:
         if current_target != 3:
-            target_scores.update({
+            scores.target_scores.update({
                 "OpenVPN": 60, #условно т.к есть UDP (80) и TCP (20)
                 "WireGuard": 120,
                 "AmneziaWG": 100,
@@ -187,9 +201,15 @@ def Selecting_target():
                 "SSH Tunnel": -20,
                 "MTProto Proxy": -100
                 })
+
+            scores.ping_weight = 0.5
+            scores.jitter_weight = 1.0
+            scores.loss_weight = 2.0
+            scores.download_weight = 2.5
+            scores.upload_weight = 0.5
              
             current_target = 3
-            calcul_result()
+            scores.calcul_result()
             print("цель изменён, смотрити в 'список прироритетных протоколов' ")
             print(current_target)
             return
@@ -199,7 +219,7 @@ def Selecting_target():
 
     if target == 4:
         if current_target != 4:
-            target_scores.update({
+            scores.target_scores.update({
                 "OpenVPN": 80, #условно т.к есть UDP (100) и TCP (80)
                 "WireGuard": 120,
                 "AmneziaWG": 100,
@@ -221,9 +241,15 @@ def Selecting_target():
                 "SSH Tunnel": 100,
                 "MTProto Proxy": 0
                 })
+
+            scores.ping_weight = 1.0
+            scores.jitter_weight = 1.5
+            scores.loss_weight = 2.0
+            scores.download_weight = 1.0
+            scores.upload_weight = 1.0
              
             current_target = 4
-            calcul_result()
+            scores.calcul_result()
             print("цель изменён, смотрити в 'список прироритетных протоколов' ")
             print(current_target)
             return
@@ -256,10 +282,10 @@ def Selecting_mode():
         #Без режима
         if current_mode != 1:
             for protocol in protocols:
-                mode_scores[protocol] = 0
+                scores.mode_scores[protocol] = 0
 
             current_mode = 1
-            calcul_result()
+            scores.calcul_result()
             print("Приоретет изменён, смотрити в 'список прироритетных протоколов' ")
             print(current_mode)
             return
@@ -270,7 +296,7 @@ def Selecting_mode():
     if mode == 2:
         #Режим борщивика
         if current_mode != 2:
-            mode_scores.update({
+            scores.mode_scores.update({
                 "OpenVPN": -150, #некоторые DPI знает характер
                 "WireGuard": -150, #некоторые DPI знает характер
                 "AmneziaWG": 100, # WG + маскировка
@@ -294,7 +320,7 @@ def Selecting_mode():
                 })
              
             current_mode = 2
-            calcul_result()
+            scores.calcul_result()
             print("Приоретет изменён, смотрити в 'список прироритетных протоколов' ")
             print(current_mode)
             return
@@ -305,7 +331,7 @@ def Selecting_mode():
     if mode == 3:
         #Режим шпиона
         if current_mode != 3:
-            mode_scores.update ({
+            scores.mode_scores.update ({
                 "OpenVPN": -150, #некоторые DPI знает характер
                 "WireGuard": -150, #некоторые DPI знает характер
                 "AmneziaWG": 100, # WG + маскировка
@@ -329,7 +355,7 @@ def Selecting_mode():
             })
 
             current_mode = 3
-            calcul_result()
+            scores.calcul_result()
             print("Приоретет изменён, смотрити в 'список прироритетных протоколов' ")
             print(current_mode)
             return
@@ -341,7 +367,7 @@ def Selecting_mode():
         #Режим агента
         if current_mode != 4:
             # Пришлось Чату GPT попросить, т. к. для меня стабильность -- анти-DPI протокол или его провайдер не отвалился за 3 дня
-            mode_scores.update ({
+            scores.mode_scores.update ({
                 "OpenVPN": 20,         # старый, тяжёлый, но зрелый и предсказуемый
                 "WireGuard": 100,      # простой, быстрый, стабильный
                 "AmneziaWG": 80,       # WG + маскировка, чуть сложнее обычного WG
@@ -365,7 +391,7 @@ def Selecting_mode():
             })
 
             current_mode = 4
-            calcul_result()
+            scores.calcul_result()
             print("Приоретет изменён, смотрити в 'список прироритетных протоколов' ")
             print(current_mode)
             return
